@@ -1,13 +1,52 @@
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider, useAuth } from '@/lib/auth'
+import Login from '@/pages/Login'
+import SignUp from '@/pages/SignUp'
+import Dashboard from '@/pages/Dashboard'
+import type { ReactNode } from 'react'
+
+function ProtectedRoute({ children }: { children: ReactNode }) {
+  const { user, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-gray-500">Chargement…</p>
+      </div>
+    )
+  }
+
+  if (!user) return <Navigate to="/login" replace />
+  return <>{children}</>
+}
+
+function GuestRoute({ children }: { children: ReactNode }) {
+  const { user, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-gray-500">Chargement…</p>
+      </div>
+    )
+  }
+
+  if (user) return <Navigate to="/dashboard" replace />
+  return <>{children}</>
+}
 
 function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">CapClient</h1>
-        <p className="text-gray-600">Mini CRM pour freelances français</p>
-      </div>
-    </div>
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
+          <Route path="/signup" element={<GuestRoute><SignUp /></GuestRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
   )
 }
 
