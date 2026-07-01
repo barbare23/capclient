@@ -23,16 +23,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Vérifier la session au montage
+    // Vérifier la session au montage (setLoading géré dans onAuthStateChange)
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
-      setLoading(false)
     })
 
     // Écouter les changements d'auth
+    // setLoading(false) ici pour éviter la race condition avec getSession
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null)
+      (event, session) => {
+        if (event === 'SIGNED_OUT') {
+          setUser(null)
+        } else {
+          setUser(session?.user ?? null)
+        }
+        setLoading(false)
       },
     )
 

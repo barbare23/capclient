@@ -5,6 +5,7 @@ import Login from '@/pages/Login'
 import SignUp from '@/pages/SignUp'
 import Dashboard from '@/pages/Dashboard'
 import Clients from '@/pages/Clients'
+import { Toaster } from '@/components/ui/sonner'
 import type { ReactNode } from 'react'
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
@@ -41,6 +42,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <Toaster />
         <Routes>
           <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
           <Route path="/signup" element={<GuestRoute><SignUp /></GuestRoute>} />

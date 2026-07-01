@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react'
-import { getClients, type Client } from '@/lib/clients'
+import { getClients, STATUT_LABELS, type Client } from '@/lib/clients'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Link } from 'react-router-dom'
 import { Users, Euro, AlertCircle } from 'lucide-react'
+import { formatEUR } from '@/lib/format'
 
 export default function Dashboard() {
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     getClients()
       .then(setClients)
+      .catch((err) => setError(err instanceof Error ? err.message : 'Erreur de chargement'))
       .finally(() => setLoading(false))
   }, [])
 
@@ -27,7 +30,7 @@ export default function Dashboard() {
     },
     {
       title: 'À encaisser',
-      value: loading ? '…' : new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(montantTotal),
+      value: loading ? '…' : formatEUR.format(montantTotal),
       icon: Euro,
       color: 'text-green-600',
       bg: 'bg-green-50',
@@ -47,6 +50,12 @@ export default function Dashboard() {
         <h2 className="text-2xl font-semibold text-gray-900">Tableau de bord</h2>
         <p className="text-sm text-gray-500 mt-1">Vue d'ensemble de votre activité</p>
       </div>
+
+      {error && (
+        <div className="rounded-lg bg-red-50 border border-red-200 p-4">
+          <p className="text-sm text-red-600">{error}</p>
+        </div>
+      )}
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -68,7 +77,7 @@ export default function Dashboard() {
         })}
       </div>
 
-      {/* Quick actions */}
+      {/* Clients récents */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Clients récents</CardTitle>
@@ -98,9 +107,9 @@ export default function Dashboard() {
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-medium">
-                      {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(client.montant_du)}
+                      {formatEUR.format(client.montant_du)}
                     </p>
-                    <p className="text-xs text-gray-500">{client.statut.replace('_', ' ')}</p>
+                    <p className="text-xs text-gray-500">{STATUT_LABELS[client.statut]}</p>
                   </div>
                 </div>
               ))}

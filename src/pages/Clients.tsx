@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getClients, deleteClient, type Client, type ClientStatut } from '@/lib/clients'
+import { getClients, deleteClient, STATUT_LABELS, type Client, type ClientStatut } from '@/lib/clients'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -10,13 +10,15 @@ import {
 } from '@/components/ui/dropdown-menu'
 import ClientFormDialog from '@/components/ClientFormDialog'
 import { MoreHorizontal, Edit, Trash2, UserPlus } from 'lucide-react'
+import { toast } from 'sonner'
+import { formatEUR } from '@/lib/format'
 
 const PIPELINE_COLUMNS: { statut: ClientStatut; label: string; color: string }[] = [
-  { statut: 'prospect', label: 'Prospects', color: 'bg-blue-100 text-blue-800' },
-  { statut: 'devis_envoye', label: 'Devis envoyé', color: 'bg-amber-100 text-amber-800' },
-  { statut: 'en_cours', label: 'En cours', color: 'bg-green-100 text-green-800' },
-  { statut: 'a_relancer', label: 'À relancer', color: 'bg-red-100 text-red-800' },
-  { statut: 'paye', label: 'Payé', color: 'bg-gray-100 text-gray-800' },
+  { statut: 'prospect', label: STATUT_LABELS.prospect, color: 'bg-blue-100 text-blue-800' },
+  { statut: 'devis_envoye', label: STATUT_LABELS.devis_envoye, color: 'bg-amber-100 text-amber-800' },
+  { statut: 'en_cours', label: STATUT_LABELS.en_cours, color: 'bg-green-100 text-green-800' },
+  { statut: 'a_relancer', label: STATUT_LABELS.a_relancer, color: 'bg-red-100 text-red-800' },
+  { statut: 'paye', label: STATUT_LABELS.paye, color: 'bg-gray-100 text-gray-800' },
 ]
 
 function StatutBadge({ statut }: { statut: ClientStatut }) {
@@ -57,7 +59,7 @@ export default function Clients() {
       await deleteClient(client.id)
       setClients((prev) => prev.filter((c) => c.id !== client.id))
     } catch (err) {
-      alert('Erreur lors de la suppression')
+      toast.error(err instanceof Error ? err.message : 'Erreur lors de la suppression')
     }
   }
 
@@ -70,9 +72,6 @@ export default function Clients() {
     setEditClient(null)
     setDialogOpen(true)
   }
-
-  const formatMontant = (m: number) =>
-    new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(m)
 
   if (loading) {
     return (
@@ -115,12 +114,15 @@ export default function Clients() {
                         )}
                         {client.montant_du > 0 && (
                           <p className="text-sm font-semibold text-gray-700 mt-1">
-                            {formatMontant(client.montant_du)}
+                            {formatEUR.format(client.montant_du)}
                           </p>
                         )}
                       </div>
                       <DropdownMenu>
-                        <DropdownMenuTrigger className="inline-flex items-center justify-center rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground h-7 w-7 shrink-0">
+                        <DropdownMenuTrigger
+                          aria-label={`Actions pour ${client.nom}`}
+                          className="inline-flex items-center justify-center rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground h-7 w-7 shrink-0"
+                        >
                           <MoreHorizontal className="h-3.5 w-3.5" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="text-sm">
@@ -172,10 +174,13 @@ export default function Clients() {
               <td className="px-4 py-3 text-gray-600">{client.entreprise ?? '—'}</td>
               <td className="px-4 py-3 text-gray-600">{client.email ?? '—'}</td>
               <td className="px-4 py-3"><StatutBadge statut={client.statut} /></td>
-              <td className="px-4 py-3 text-right font-medium">{formatMontant(client.montant_du)}</td>
+              <td className="px-4 py-3 text-right font-medium">{formatEUR.format(client.montant_du)}</td>
               <td className="px-4 py-3">
                 <DropdownMenu>
-                  <DropdownMenuTrigger className="inline-flex items-center justify-center rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground h-7 w-7">
+                  <DropdownMenuTrigger
+                    aria-label={`Actions pour ${client.nom}`}
+                    className="inline-flex items-center justify-center rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground h-7 w-7"
+                  >
                     <MoreHorizontal className="h-3.5 w-3.5" />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="text-sm">

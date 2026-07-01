@@ -61,6 +61,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                 <Link
                   key={item.href}
                   to={item.href}
+                  aria-label={item.label}
                   className={`p-2 rounded-lg ${active ? 'bg-gray-100' : ''}`}
                 >
                   <Icon className="h-5 w-5 text-gray-600" />

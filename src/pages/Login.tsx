@@ -16,9 +16,12 @@ export default function Login() {
     e.preventDefault()
     setError(null)
     setLoading(true)
-    const err = await signIn(email, password)
-    if (err) setError(err)
-    setLoading(false)
+    try {
+      const err = await signIn(email, password)
+      if (err) setError(err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (

@@ -7,6 +7,14 @@ export type ClientStatut =
   | 'a_relancer'
   | 'paye'
 
+export const STATUT_LABELS: Record<ClientStatut, string> = {
+  prospect: 'Prospect',
+  devis_envoye: 'Devis envoyé',
+  en_cours: 'En cours',
+  a_relancer: 'À relancer',
+  paye: 'Payé',
+}
+
 export interface Client {
   id: string
   user_id: string
@@ -22,7 +30,9 @@ export interface Client {
   created_at: string
 }
 
-export type ClientInput = Pick<Client, 'nom'> & Partial<Omit<Client, 'id' | 'user_id' | 'created_at'>>
+// statut est obligatoire à la création/mise à jour
+export type ClientInput = Pick<Client, 'nom' | 'statut'> &
+  Partial<Omit<Client, 'id' | 'user_id' | 'created_at' | 'nom' | 'statut'>>
 
 const TABLE = 'clients'
 
@@ -36,6 +46,7 @@ export async function getClients(): Promise<Client[]> {
   return data ?? []
 }
 
+// Utilisé plus tard pour la page détail client
 export async function getClient(id: string): Promise<Client | null> {
   const { data, error } = await supabase
     .from(TABLE)

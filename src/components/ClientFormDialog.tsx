@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { createClient, updateClient, type Client, type ClientInput, type ClientStatut } from '@/lib/clients'
+import { createClient, updateClient, STATUT_LABELS, type Client, type ClientInput, type ClientStatut } from '@/lib/clients'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -18,14 +18,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-
-const STATUTS: { value: ClientStatut; label: string }[] = [
-  { value: 'prospect', label: 'Prospect' },
-  { value: 'devis_envoye', label: 'Devis envoyé' },
-  { value: 'en_cours', label: 'En cours' },
-  { value: 'a_relancer', label: 'À relancer' },
-  { value: 'paye', label: 'Payé' },
-]
 
 interface Props {
   open: boolean
@@ -50,6 +42,8 @@ export default function ClientFormDialog({ open, onOpenChange, client, onSaved }
 
   const isEdit = !!client
 
+  // Populate form when editing a client or reset when opening for creation
+  // Deps: client?.id (pas client) pour éviter les re-renders inutiles + open
   useEffect(() => {
     if (client) {
       setNom(client.nom)
@@ -64,7 +58,8 @@ export default function ClientFormDialog({ open, onOpenChange, client, onSaved }
     } else {
       resetForm()
     }
-  }, [client, open])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [client?.id, open])
 
   const resetForm = () => {
     setNom('')
@@ -86,6 +81,13 @@ export default function ClientFormDialog({ open, onOpenChange, client, onSaved }
       return
     }
 
+    // Validation SIRET : exactement 14 chiffres si renseigné
+    const siretClean = siret.replace(/\s/g, '')
+    if (siretClean && !/^\d{14}$/.test(siretClean)) {
+      setError('Le SIRET doit contenir exactement 14 chiffres')
+      return
+    }
+
     setLoading(true)
     setError(null)
 
@@ -95,10 +97,10 @@ export default function ClientFormDialog({ open, onOpenChange, client, onSaved }
         email: email.trim() || null,
         telephone: telephone.trim() || null,
         entreprise: entreprise.trim() || null,
-        siret: siret.trim() || null,
+        siret: siretClean || null,
         adresse: adresse.trim() || null,
         statut,
-        montant_du: parseFloat(montantDu) || 0,
+        montant_du: Math.max(0, parseFloat(montantDu) || 0),
         notes: notes.trim() || null,
       }
 
@@ -151,7 +153,13 @@ export default function ClientFormDialog({ open, onOpenChange, client, onSaved }
 
             <div className="space-y-2">
               <Label htmlFor="siret">SIRET</Label>
-              <Input id="siret" value={siret} onChange={(e) => setSiret(e.target.value)} placeholder="123 456 789 00012" />
+              <Input
+                id="siret"
+                inputMode="numeric"
+                value={siret}
+                onChange={(e) => setSiret(e.target.value)}
+                placeholder="12345678900012"
+              />
             </div>
 
             <div className="space-y-2 col-span-2">
@@ -166,8 +174,8 @@ export default function ClientFormDialog({ open, onOpenChange, client, onSaved }
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {STATUTS.map((s) => (
-                    <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                  {(Object.keys(STATUT_LABELS) as ClientStatut[]).map((value) => (
+                    <SelectItem key={value} value={value}>{STATUT_LABELS[value]}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -175,12 +183,27 @@ export default function ClientFormDialog({ open, onOpenChange, client, onSaved }
 
             <div className="space-y-2">
               <Label htmlFor="montant">Montant dû (€)</Label>
-              <Input id="montant" type="number" step="0.01" min="0" value={montantDu} onChange={(e) => setMontantDu(e.target.value)} placeholder="0.00" />
+              <Input
+                id="montant"
+                type="number"
+                step="0.01"
+                min="0"
+                value={montantDu}
+                onChange={(e) => setMontantDu(e.target.value)}
+                placeholder="0.00"
+              />
             </div>
 
             <div className="space-y-2 col-span-2">
               <Label htmlFor="notes">Notes</Label>
-              <Input id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notes supplémentaires…" />
+              <textarea
+                id="notes"
+                rows={3}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Notes supplémentaires…"
+                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+              />
             </div>
           </div>
 

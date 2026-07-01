@@ -28,13 +28,16 @@ export default function SignUp() {
     }
 
     setLoading(true)
-    const err = await signUp(email, password)
-    if (err) {
-      setError(err)
-    } else {
-      setSuccess(true)
+    try {
+      const err = await signUp(email, password)
+      if (err) {
+        setError(err)
+      } else {
+        setSuccess(true)
+      }
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   if (success) {
