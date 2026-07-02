@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { createClient, updateClient, STATUT_LABELS, type Client, type ClientInput, type ClientStatut } from '@/lib/clients'
+import { supabase } from '@/lib/supabase'
+import { CLIENTS_LIMIT_FREE } from '@/lib/subscription'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -107,6 +109,19 @@ export default function ClientFormDialog({ open, onOpenChange, client, onSaved }
       if (isEdit && client) {
         await updateClient(client.id, input)
       } else {
+        // Fix #4 : Vérifier la limite gratuite côté client (sécurité renforcée par RLS)
+        const { count } = await supabase
+          .from('clients')
+          .select('*', { count: 'exact', head: true })
+        if ((count ?? 0) >= CLIENTS_LIMIT_FREE) {
+          const { data: sub } = await supabase
+            .from('subscriptions')
+            .select('plan')
+            .maybeSingle()
+          if (!sub || sub.plan !== 'pro') {
+            throw new Error('Limite de 5 clients atteinte. Passez à CapClient Pro pour des clients illimités.')
+          }
+        }
         await createClient(input)
       }
 

@@ -33,11 +33,18 @@ export async function createCheckoutSession(
   email: string,
   returnUrl: string,
 ): Promise<string> {
+  // Fix #1 : Envoyer le JWT dans le header Authorization pour authentification côté Edge Function
+  const { data: { session } } = await supabase.auth.getSession()
+  const token = session?.access_token
+
   const res = await fetch(
     'https://jdwvkmzwgtdwgrayktph.supabase.co/functions/v1/stripe-webhook/create-checkout-session',
     {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify({ user_id: userId, email, return_url: returnUrl }),
     },
   )

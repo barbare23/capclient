@@ -6,10 +6,12 @@ const STRIPE_WEBHOOK_SECRET = Deno.env.get('STRIPE_WEBHOOK_SECRET')!
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
-const STRIPE_PRICE_ID = 'price_1Toqu1Paj8OedYYbS3UhUMLT'
+// Suggestion #6 : STRIPE_PRICE_ID en variable d'environnement avec fallback
+const STRIPE_PRICE_ID = Deno.env.get('STRIPE_PRICE_ID') || 'price_1Toqu1Paj8OedYYbS3UhUMLT'
 
+// Suggestion #5 : Restreindre CORS (wildcard remplacé par origine configurée)
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || 'http://localhost:5173',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
@@ -103,10 +105,28 @@ serve(async (req: Request) => {
         })
       }
 
-      const { user_id, success_url, cancel_url } = await req.json()
-      if (!user_id) {
-        return new Response(JSON.stringify({ error: 'user_id is required' }), {
-          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      // Fix #1 : Vérification JWT — extraire et valider le token Bearer
+      const authHeader = req.headers.get('Authorization')
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return new Response(JSON.stringify({ error: 'Authorization required' }), {
+          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      const token = authHeader.replace('Bearer ', '')
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token)
+      if (authError || !authUser) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired token' }), {
+          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      // Fix #2 : Lire return_url au lieu de success_url / cancel_url
+      const { user_id, return_url } = await req.json()
+
+      // Fix #1 suite : Comparer user_id du body avec l'uid du JWT
+      if (!user_id || authUser.id !== user_id) {
+        return new Response(JSON.stringify({ error: 'Unauthorized: user_id mismatch' }), {
+          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
 
@@ -132,13 +152,14 @@ serve(async (req: Request) => {
         stripeCustomerId = customer.id
       }
 
-      const baseUrl = success_url || 'https://capclient.fr/dashboard'
+      // Fix #2 suite : Construire success_url / cancel_url depuis return_url
+      const baseUrl = return_url || 'https://capclient.fr/dashboard'
       const session = await stripeRequest('/checkout/sessions', 'POST', {
         customer: stripeCustomerId,
         mode: 'subscription',
         line_items: [{ price: STRIPE_PRICE_ID, quantity: 1 }],
-        success_url: success_url || `${baseUrl}?checkout=success`,
-        cancel_url: cancel_url || `${baseUrl}?checkout=canceled`,
+        success_url: `${baseUrl}?checkout=success`,
+        cancel_url: `${baseUrl}?checkout=canceled`,
         metadata: { user_id },
         subscription_data: { metadata: { user_id } },
       })
@@ -209,7 +230,8 @@ serve(async (req: Request) => {
 
           await supabase.from('subscriptions').update({
             status: stripeSub.status,
-            plan: stripeSub.status === 'active' ? 'pro' : 'free',
+            // Fix #3 : Inclure 'trialing' comme statut Pro
+            plan: (stripeSub.status === 'active' || stripeSub.status === 'trialing') ? 'pro' : 'free',
             current_period_start: new Date(stripeSub.current_period_start * 1000).toISOString(),
             current_period_end: new Date(stripeSub.current_period_end * 1000).toISOString(),
             updated_at: new Date().toISOString(),
