@@ -2,13 +2,17 @@ import { useState, useEffect } from 'react'
 import { getClients, STATUT_LABELS, type Client } from '@/lib/clients'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Link } from 'react-router-dom'
-import { Users, Euro, AlertCircle } from 'lucide-react'
+import { Users, Euro, AlertCircle, Sparkles } from 'lucide-react'
 import { formatEUR } from '@/lib/format'
+import { useAuth } from '@/lib/auth'
+import { getSubscription, isPro, type Subscription } from '@/lib/subscription'
 
 export default function Dashboard() {
+  const { user } = useAuth()
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [sub, setSub] = useState<Subscription | null>(null)
 
   useEffect(() => {
     getClients()
@@ -16,6 +20,15 @@ export default function Dashboard() {
       .catch((err) => setError(err instanceof Error ? err.message : 'Erreur de chargement'))
       .finally(() => setLoading(false))
   }, [])
+
+  useEffect(() => {
+    if (!user) return
+    getSubscription(user.id)
+      .then(setSub)
+      .catch(() => {/* ignore */})
+  }, [user])
+
+  const isProPlan = isPro(sub)
 
   const montantTotal = clients.reduce((sum, c) => sum + c.montant_du, 0)
   const relancesEnAttente = clients.filter((c) => c.statut === 'a_relancer' || c.statut === 'devis_envoye').length
@@ -46,9 +59,32 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-semibold text-gray-900">Tableau de bord</h2>
-        <p className="text-sm text-gray-500 mt-1">Vue d'ensemble de votre activité</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="text-2xl font-semibold text-gray-900">Tableau de bord</h2>
+          <p className="text-sm text-gray-500 mt-1">Vue d'ensemble de votre activité</p>
+        </div>
+        {/* Badge plan */}
+        <Link
+          to="/abonnement"
+          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+            isProPlan
+              ? 'bg-violet-100 text-violet-700 hover:bg-violet-200'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}
+        >
+          {isProPlan ? (
+            <>
+              <Sparkles className="h-3 w-3" />
+              Pro
+            </>
+          ) : (
+            <>
+              <Sparkles className="h-3 w-3" />
+              Gratuit — Passer à Pro
+            </>
+          )}
+        </Link>
       </div>
 
       {error && (

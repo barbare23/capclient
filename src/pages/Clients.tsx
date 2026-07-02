@@ -9,9 +9,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import ClientFormDialog from '@/components/ClientFormDialog'
-import { MoreHorizontal, Edit, Trash2, UserPlus } from 'lucide-react'
+import { MoreHorizontal, Edit, Trash2, UserPlus, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatEUR } from '@/lib/format'
+import { Link } from 'react-router-dom'
+import { useAuth } from '@/lib/auth'
+import { getSubscription, isPro, CLIENTS_LIMIT_FREE, type Subscription } from '@/lib/subscription'
 
 const PIPELINE_COLUMNS: { statut: ClientStatut; label: string; color: string }[] = [
   { statut: 'prospect', label: STATUT_LABELS.prospect, color: 'bg-blue-100 text-blue-800' },
@@ -31,12 +34,14 @@ function StatutBadge({ statut }: { statut: ClientStatut }) {
 }
 
 export default function Clients() {
+  const { user } = useAuth()
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editClient, setEditClient] = useState<Client | null>(null)
   const [viewMode, setViewMode] = useState<'pipeline' | 'table'>('pipeline')
+  const [sub, setSub] = useState<Subscription | null>(null)
 
   const loadClients = async () => {
     try {
@@ -52,6 +57,15 @@ export default function Clients() {
   useEffect(() => {
     loadClients()
   }, [])
+
+  useEffect(() => {
+    if (!user) return
+    getSubscription(user.id)
+      .then(setSub)
+      .catch(() => {/* ignore */})
+  }, [user])
+
+  const atLimit = !isPro(sub) && clients.length >= CLIENTS_LIMIT_FREE
 
   const handleDelete = async (client: Client) => {
     if (!confirm(`Supprimer ${client.nom} ? Cette action est irréversible.`)) return
@@ -235,12 +249,32 @@ export default function Clients() {
               Tableau
             </button>
           </div>
-          <Button onClick={openAdd}>
+          <Button onClick={openAdd} disabled={atLimit}>
             <UserPlus className="h-4 w-4 mr-2" />
             Nouveau client
           </Button>
         </div>
       </div>
+
+      {/* Banner limite Free */}
+      {atLimit && (
+        <div className="rounded-lg bg-amber-50 border border-amber-200 p-4 flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <Sparkles className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+            <p className="text-sm text-amber-800">
+              Vous avez atteint la limite de {CLIENTS_LIMIT_FREE} clients du plan Gratuit.
+              Passez à CapClient Pro pour ajouter des clients illimités.
+            </p>
+          </div>
+          <Link
+            to="/abonnement"
+            className="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white rounded-md px-3 py-1.5 transition-colors"
+          >
+            <Sparkles className="h-3 w-3" />
+            Passer à Pro
+          </Link>
+        </div>
+      )}
 
       {/* Content */}
       {viewMode === 'pipeline' ? renderPipeline() : renderTable()}
