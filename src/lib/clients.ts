@@ -59,9 +59,12 @@ export async function getClient(id: string): Promise<Client | null> {
 }
 
 export async function createClient(input: ClientInput): Promise<Client> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Vous devez être connecté')
+
   const { data, error } = await supabase
     .from(TABLE)
-    .insert(input)
+    .insert({ ...input, user_id: user.id })
     .select()
     .single()
 
