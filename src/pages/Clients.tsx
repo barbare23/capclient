@@ -169,7 +169,8 @@ export default function Clients() {
 
   // === Table view ===
   const renderTable = () => (
-    <div className="border rounded-lg overflow-hidden">
+    <div className="overflow-x-auto">
+      <div className="border rounded-lg overflow-hidden min-w-[600px]">
       <table className="w-full text-sm">
         <thead className="bg-gray-50 border-b">
           <tr>
@@ -218,6 +219,7 @@ export default function Clients() {
           )}
         </tbody>
       </table>
+      </div>
     </div>
   )
 
@@ -235,7 +237,7 @@ export default function Clients() {
             <button
               onClick={() => setViewMode('pipeline')}
               className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                viewMode === 'pipeline' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
+                viewMode === 'pipeline' ? 'bg-primary text-primary-foreground' : 'bg-white text-gray-600 hover:bg-gray-50'
               }`}
             >
               Pipeline
@@ -243,7 +245,7 @@ export default function Clients() {
             <button
               onClick={() => setViewMode('table')}
               className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                viewMode === 'table' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
+                viewMode === 'table' ? 'bg-primary text-primary-foreground' : 'bg-white text-gray-600 hover:bg-gray-50'
               }`}
             >
               Tableau
