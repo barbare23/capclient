@@ -146,24 +146,32 @@ export default function Abonnement() {
 
       {/* Carte upgrade si Free, ou confirmation si Pro */}
       {isProPlan ? (
-        <Card className="border-violet-200 bg-violet-50">
+        <Card className="border-green-200 bg-green-50">
           <CardContent className="p-6">
             <div className="flex items-start gap-4">
-              <div className="rounded-xl bg-violet-100 p-3">
-                <Sparkles className="h-6 w-6 text-violet-600" />
+              <div className="rounded-xl bg-green-100 p-3">
+                <BadgeCheck className="h-6 w-6 text-green-600" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 mb-1">Vous êtes sur CapClient Pro 🎉</h3>
-                <p className="text-sm text-gray-600 mb-3">
+                <h3 className="font-semibold text-gray-900 mb-1">CapClient Pro ✅ Actif</h3>
+                <p className="text-sm text-gray-600 mb-4">
                   Clients illimités, relances automatiques par email, et toutes les fonctionnalités à venir.
                 </p>
-                <p className="text-xs text-gray-500">
-                  Pour gérer votre abonnement, mettre à jour votre moyen de paiement ou annuler,
-                  contactez-nous à{' '}
-                  <a href="mailto:support@capclient.fr" className="text-violet-600 hover:underline">
-                    support@capclient.fr
-                  </a>
-                </p>
+                {periodEnd && (
+                  <p className="text-xs text-gray-500 mb-4">
+                    Prochaine facturation le{' '}
+                    <span className="font-medium text-gray-700">{periodEnd}</span>
+                  </p>
+                )}
+                <a
+                  href="https://dashboard.stripe.com/test/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-md bg-white border border-green-200 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-green-50 transition-colors"
+                >
+                  <CreditCard className="h-4 w-4 text-green-600" />
+                  Gérer mon abonnement
+                </a>
               </div>
             </div>
           </CardContent>

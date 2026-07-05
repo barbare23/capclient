@@ -65,26 +65,20 @@ export default function Dashboard() {
           <p className="text-sm text-gray-500 mt-1">Vue d'ensemble de votre activité</p>
         </div>
         {/* Badge plan */}
-        <Link
-          to="/abonnement"
-          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-            isProPlan
-              ? 'bg-violet-100 text-violet-700 hover:bg-violet-200'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          {isProPlan ? (
-            <>
-              <Sparkles className="h-3 w-3" />
-              Pro
-            </>
-          ) : (
-            <>
-              <Sparkles className="h-3 w-3" />
-              Gratuit — Passer à Pro
-            </>
-          )}
-        </Link>
+        {isProPlan ? (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+            <Sparkles className="h-3 w-3" />
+            Pro ✅
+          </span>
+        ) : (
+          <Link
+            to="/abonnement"
+            className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600 hover:bg-gray-200 transition-colors"
+          >
+            <Sparkles className="h-3 w-3" />
+            Gratuit — Passer à Pro
+          </Link>
+        )}
       </div>
 
       {error && (

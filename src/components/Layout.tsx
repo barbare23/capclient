@@ -1,8 +1,10 @@
+import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { LayoutDashboard, Users, LogOut, CreditCard } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { getSubscription, isPro, type Subscription } from '@/lib/subscription'
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
@@ -13,6 +15,16 @@ const NAV_ITEMS = [
 export default function Layout({ children }: { children: ReactNode }) {
   const { user, signOut } = useAuth()
   const location = useLocation()
+  const [sub, setSub] = useState<Subscription | null>(null)
+
+  useEffect(() => {
+    if (!user) return
+    getSubscription(user.id)
+      .then(setSub)
+      .catch(() => {/* ignore */})
+  }, [user])
+
+  const isProPlan = isPro(sub)
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -25,6 +37,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon
             const active = location.pathname === item.href
+            const isAbonnement = item.href === '/abonnement'
             return (
               <Link
                 key={item.href}
@@ -37,6 +50,11 @@ export default function Layout({ children }: { children: ReactNode }) {
               >
                 <Icon className="h-4 w-4" />
                 {item.label}
+                {isAbonnement && isProPlan && (
+                  <span className="ml-auto inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
+                    Pro
+                  </span>
+                )}
               </Link>
             )
           })}
