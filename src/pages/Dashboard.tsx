@@ -30,7 +30,9 @@ export default function Dashboard() {
 
   const isProPlan = isPro(sub)
 
-  const montantTotal = clients.reduce((sum, c) => sum + c.montant_du, 0)
+  const montantTotal = clients
+    .filter((c) => c.statut !== 'paye')
+    .reduce((sum, c) => sum + c.montant_du, 0)
   const relancesEnAttente = clients.filter((c) => c.statut === 'a_relancer' || c.statut === 'devis_envoye').length
 
   const cards = [
