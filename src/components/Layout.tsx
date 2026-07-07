@@ -74,7 +74,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       <div className="flex flex-col flex-1 min-w-0">
         <header className="md:hidden bg-white border-b px-4 py-3 flex items-center justify-between">
           <Link to="/dashboard" className="block">
-            <img src="/capclient-logo.png" alt="CapClient" className="h-7 w-auto" />
+            <img src="/capclient-icon.png" alt="CapClient" className="h-7 w-auto" />
           </Link>
           <div className="flex items-center gap-2">
             {NAV_ITEMS.map((item) => {
