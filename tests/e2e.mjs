@@ -112,7 +112,12 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
  */
 async function createTestUserViaForm(page) {
   log.info(`Inscription de l'utilisateur de test : ${TEST_EMAIL}`)
+  // Charger l'app d'abord (nécessaire pour SPA — initialise React Router)
+  await page.goto(BASE_URL, { waitUntil: 'networkidle0', timeout: NAV_TIMEOUT })
+  // Puis naviguer vers /signup
   await page.goto(`${BASE_URL}/signup`, { waitUntil: 'networkidle0', timeout: NAV_TIMEOUT })
+  // Attendre que le formulaire soit visible
+  await waitFor(page, 'h2', ELEM_TIMEOUT)
   await fill(page, '#email', TEST_EMAIL)
   await fill(page, '#password', TEST_PWD)
   await fill(page, '#confirm-password', TEST_PWD)
@@ -155,6 +160,8 @@ async function assertUrl(page, pattern, label) {
 async function testSignup(page) {
   log.section('TEST 1 — Inscription (page /signup)')
 
+  // Charger la racine d'abord (nécessaire pour SPA)
+  await page.goto(BASE_URL, { waitUntil: 'networkidle0', timeout: NAV_TIMEOUT })
   await goto(page, `${BASE_URL}/signup`)
   await waitFor(page, 'form', ELEM_TIMEOUT)
   await screenshot(page, '01_signup_page')
@@ -193,6 +200,8 @@ async function testSignup(page) {
 async function testLogin(page) {
   log.section('TEST 2 — Connexion (/login)')
 
+  // Charger la racine d'abord (nécessaire pour SPA)
+  await page.goto(BASE_URL, { waitUntil: 'networkidle0', timeout: NAV_TIMEOUT })
   await goto(page, `${BASE_URL}/login`)
   await waitFor(page, 'form', ELEM_TIMEOUT)
   await screenshot(page, '02_login_page')
