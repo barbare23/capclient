@@ -116,18 +116,24 @@ async function createTestUserViaForm(page) {
   await page.goto(BASE_URL, { waitUntil: 'networkidle0', timeout: NAV_TIMEOUT })
   // Puis naviguer vers /signup
   await page.goto(`${BASE_URL}/signup`, { waitUntil: 'networkidle0', timeout: NAV_TIMEOUT })
-  // Attendre que le formulaire soit visible
-  await waitFor(page, 'h2', ELEM_TIMEOUT)
+  // Attendre que le formulaire soit visible (CardTitle est une <div>, pas un <h2>)
+  await waitFor(page, 'form', ELEM_TIMEOUT)
   await fill(page, '#email', TEST_EMAIL)
   await fill(page, '#password', TEST_PWD)
   await fill(page, '#confirm-password', TEST_PWD)
   await page.click('button[type="submit"]')
-  // Attendre le message de succès
-  await waitFor(page, 'text=Inscription réussie', ELEM_TIMEOUT).catch(async () => {
-    await waitFor(page, 'h2', ELEM_TIMEOUT)
+  // Attendre le message de succès (CardTitle est une <div data-slot="card-title">)
+  // Ou si la confirmation email est désactivée, l'app redirige directement vers /dashboard
+  await page.waitForFunction(
+    () => document.body.innerText.includes('Inscription réussie') ||
+          document.body.innerText.includes('confirmation') ||
+          window.location.pathname.includes('/dashboard'),
+    { timeout: ELEM_TIMEOUT }
+  ).catch(async () => {
     const text = await page.$eval('body', (el) => el.innerText)
-    if (!text.includes('Inscription réussie') && !text.includes('confirmation')) {
-      throw new Error('Message de succès inscription non trouvé')
+    const url = page.url()
+    if (!text.includes('Inscription réussie') && !text.includes('confirmation') && !url.includes('/dashboard')) {
+      throw new Error(`Message de succès inscription non trouvé (URL: ${url}, text: ${text.slice(0, 200)})`)
     }
   })
   await screenshot(page, '00_test_user_created')
@@ -179,10 +185,12 @@ async function testSignup(page) {
   // Soumettre
   await page.click('button[type="submit"]')
 
-  // Attendre le message de succès (confirmation email envoyé)
-  await waitFor(page, 'text=Inscription réussie', ELEM_TIMEOUT).catch(async () => {
-    // Chercher aussi le titre dans le DOM
-    await waitFor(page, 'h2', ELEM_TIMEOUT)
+  // Attendre le message de succès (CardTitle est une <div>, pas un h2)
+  await page.waitForFunction(
+    () => document.body.innerText.includes('Inscription réussie') ||
+          document.body.innerText.includes('confirmation'),
+    { timeout: ELEM_TIMEOUT }
+  ).catch(async () => {
     const text = await page.$eval('body', (el) => el.innerText)
     if (!text.includes('Inscription réussie') && !text.includes('confirmation')) {
       throw new Error('Message de succès inscription non trouvé')
