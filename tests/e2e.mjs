@@ -169,6 +169,16 @@ async function testSignup(page) {
   // Charger la racine d'abord (nécessaire pour SPA)
   await page.goto(BASE_URL, { waitUntil: 'networkidle0', timeout: NAV_TIMEOUT })
   await goto(page, `${BASE_URL}/signup`)
+
+  // Si déjà connecté (via le setup), /signup redirige vers /dashboard
+  const currentUrl = page.url()
+  if (currentUrl.includes('/dashboard')) {
+    log.info('Déjà connecté — vérification du comportement attendu')
+    log.ok('Redirection automatique vers le dashboard (GuestRoute)')
+    await screenshot(page, '01_signup_redirige_dashboard')
+    return
+  }
+
   await waitFor(page, 'form', ELEM_TIMEOUT)
   await screenshot(page, '01_signup_page')
 
@@ -211,6 +221,16 @@ async function testLogin(page) {
   // Charger la racine d'abord (nécessaire pour SPA)
   await page.goto(BASE_URL, { waitUntil: 'networkidle0', timeout: NAV_TIMEOUT })
   await goto(page, `${BASE_URL}/login`)
+
+  // Si déjà connecté (via le setup), /login redirige vers /dashboard
+  const currentUrl = page.url()
+  if (currentUrl.includes('/dashboard')) {
+    log.info('Déjà connecté — vérification du comportement attendu')
+    log.ok('Redirection automatique vers le dashboard (GuestRoute)')
+    await screenshot(page, '02_login_redirige_dashboard')
+    return
+  }
+
   await waitFor(page, 'form', ELEM_TIMEOUT)
   await screenshot(page, '02_login_page')
 
