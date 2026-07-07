@@ -64,6 +64,7 @@ export default function SignUp() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
+          <img src="/capclient-logo.png" alt="CapClient" className="h-12 w-auto mb-4 mx-auto" />
           <CardTitle className="text-2xl">Inscription</CardTitle>
           <CardDescription>Créez votre compte CapClient</CardDescription>
         </CardHeader>

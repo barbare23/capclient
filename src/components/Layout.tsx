@@ -31,7 +31,9 @@ export default function Layout({ children }: { children: ReactNode }) {
       {/* Sidebar */}
       <aside className="w-64 bg-white border-r hidden md:flex flex-col">
         <div className="p-6 border-b">
-          <Link to="/dashboard" className="text-xl font-bold text-gray-900">CapClient</Link>
+          <Link to="/dashboard" className="block">
+            <img src="/capclient-logo.png" alt="CapClient" className="h-8 w-auto" />
+          </Link>
         </div>
         <nav className="flex-1 p-4 space-y-1">
           {NAV_ITEMS.map((item) => {
@@ -71,7 +73,9 @@ export default function Layout({ children }: { children: ReactNode }) {
       {/* Mobile header */}
       <div className="flex flex-col flex-1 min-w-0">
         <header className="md:hidden bg-white border-b px-4 py-3 flex items-center justify-between">
-          <Link to="/dashboard" className="text-lg font-bold text-gray-900">CapClient</Link>
+          <Link to="/dashboard" className="block">
+            <img src="/capclient-logo.png" alt="CapClient" className="h-7 w-auto" />
+          </Link>
           <div className="flex items-center gap-2">
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon
