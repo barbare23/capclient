@@ -377,26 +377,6 @@ export default function Clients() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {/* Actifs / Perdus toggle */}
-          <div className="flex border rounded-lg overflow-hidden">
-            <button
-              onClick={() => setFilterMode('actif')}
-              className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                filterMode === 'actif' ? 'bg-primary text-primary-foreground' : 'bg-white text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              Actifs {activeClients.length > 0 && <span className="ml-1 opacity-70">({activeClients.length})</span>}
-            </button>
-            <button
-              onClick={() => setFilterMode('perdu')}
-              className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                filterMode === 'perdu' ? 'bg-red-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              Perdus {perduClients.length > 0 && <span className="ml-1 opacity-70">({perduClients.length})</span>}
-            </button>
-          </div>
-
           {/* View toggle — only when showing active clients */}
           {filterMode === 'actif' && (
             <div className="flex border rounded-lg overflow-hidden">
@@ -418,6 +398,26 @@ export default function Clients() {
               </button>
             </div>
           )}
+
+          {/* Actifs / Perdus toggle */}
+          <div className="flex border rounded-lg overflow-hidden">
+            <button
+              onClick={() => setFilterMode('actif')}
+              className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                filterMode === 'actif' ? 'bg-primary text-primary-foreground' : 'bg-white text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              Actifs {activeClients.length > 0 && <span className="ml-1 opacity-70">({activeClients.length})</span>}
+            </button>
+            <button
+              onClick={() => setFilterMode('perdu')}
+              className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                filterMode === 'perdu' ? 'bg-red-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              Perdus {perduClients.length > 0 && <span className="ml-1 opacity-70">({perduClients.length})</span>}
+            </button>
+          </div>
 
           <Button onClick={openAdd} disabled={atLimit}>
             <UserPlus className="h-4 w-4 mr-2" />
