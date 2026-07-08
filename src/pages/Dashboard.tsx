@@ -30,15 +30,18 @@ export default function Dashboard() {
 
   const isProPlan = isPro(sub)
 
-  const montantTotal = clients
+  // Exclure les clients perdus des stats
+  const activeClients = clients.filter((c) => c.statut !== 'perdu')
+
+  const montantTotal = activeClients
     .filter((c) => c.statut !== 'paye')
     .reduce((sum, c) => sum + c.montant_du, 0)
-  const relancesEnAttente = clients.filter((c) => c.statut === 'a_relancer' || c.statut === 'devis_envoye').length
+  const relancesEnAttente = activeClients.filter((c) => c.statut === 'a_relancer' || c.statut === 'devis_envoye').length
 
   const cards = [
     {
-      title: 'Clients',
-      value: loading ? '…' : clients.length.toString(),
+      title: 'Clients actifs',
+      value: loading ? '…' : activeClients.length.toString(),
       icon: Users,
       color: 'text-blue-600',
       bg: 'bg-blue-50',
@@ -117,7 +120,7 @@ export default function Dashboard() {
         <CardContent>
           {loading ? (
             <p className="text-gray-500 text-sm">Chargement…</p>
-          ) : clients.length === 0 ? (
+          ) : activeClients.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-gray-500 mb-4">Aucun client pour le moment</p>
               <Link
@@ -129,7 +132,7 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="space-y-3">
-              {clients.slice(0, 5).map((client) => (
+              {activeClients.slice(0, 5).map((client) => (
                 <div key={client.id} className="flex items-center justify-between py-2 border-b last:border-0">
                   <div>
                     <p className="text-sm font-medium text-gray-900">{client.nom}</p>
@@ -145,12 +148,12 @@ export default function Dashboard() {
                   </div>
                 </div>
               ))}
-              {clients.length > 5 && (
+              {activeClients.length > 5 && (
                 <Link
                   to="/clients"
                   className="block text-center text-sm text-blue-600 hover:text-blue-800 pt-2"
                 >
-                  Voir tous les clients ({clients.length})
+                  Voir tous les clients ({activeClients.length})
                 </Link>
               )}
             </div>

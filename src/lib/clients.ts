@@ -6,6 +6,7 @@ export type ClientStatut =
   | 'en_cours'
   | 'a_relancer'
   | 'paye'
+  | 'perdu'
 
 export const STATUT_LABELS: Record<ClientStatut, string> = {
   prospect: 'Prospect',
@@ -13,6 +14,21 @@ export const STATUT_LABELS: Record<ClientStatut, string> = {
   en_cours: 'En cours',
   a_relancer: 'À relancer',
   paye: 'Payé',
+  perdu: 'Perdu',
+}
+
+export const PIPELINE_ORDER: ClientStatut[] = ['prospect', 'devis_envoye', 'en_cours', 'a_relancer', 'paye']
+
+export function etapeSuivante(statut: ClientStatut): ClientStatut | null {
+  const idx = PIPELINE_ORDER.indexOf(statut)
+  if (idx === -1 || idx >= PIPELINE_ORDER.length - 1) return null
+  return PIPELINE_ORDER[idx + 1]
+}
+
+export function etapePrecedente(statut: ClientStatut): ClientStatut | null {
+  const idx = PIPELINE_ORDER.indexOf(statut)
+  if (idx <= 0) return null
+  return PIPELINE_ORDER[idx - 1]
 }
 
 export interface Client {
