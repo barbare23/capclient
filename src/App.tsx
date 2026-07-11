@@ -6,6 +6,7 @@ import SignUp from '@/pages/SignUp'
 import Dashboard from '@/pages/Dashboard'
 import Clients from '@/pages/Clients'
 import Abonnement from '@/pages/Abonnement'
+import Parametres from '@/pages/Parametres'
 import { Toaster } from '@/components/ui/sonner'
 import type { ReactNode } from 'react'
 
@@ -50,6 +51,7 @@ function App() {
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
           <Route path="/abonnement" element={<ProtectedRoute><Abonnement /></ProtectedRoute>} />
+          <Route path="/parametres" element={<ProtectedRoute><Parametres /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </AuthProvider>

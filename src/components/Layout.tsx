@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
-import { LayoutDashboard, Users, LogOut, CreditCard } from 'lucide-react'
+import { LayoutDashboard, Users, LogOut, CreditCard, Settings } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { getSubscription, isPro, type Subscription } from '@/lib/subscription'
 
@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: '/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
   { href: '/clients', label: 'Clients', icon: Users },
   { href: '/abonnement', label: 'Abonnement', icon: CreditCard },
+  { href: '/parametres', label: 'Paramètres', icon: Settings },
 ]
 
 export default function Layout({ children }: { children: ReactNode }) {
